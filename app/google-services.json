@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "37483255662",
+    "firebase_url": "https://gamblingblocker.firebaseio.com",
+    "project_id": "gamblingblocker",
+    "storage_bucket": "gamblingblocker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:37483255662:android:680b8cc0e1c9b770",
+        "android_client_info": {
+          "package_name": "com.example.gambling_blocker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "37483255662-7p3gf03704l4irlpuqueoj0lgbtcgdlk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl_a1lFqltB34z5hRZBakiQmu9RM5v8Q0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "37483255662-7p3gf03704l4irlpuqueoj0lgbtcgdlk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
