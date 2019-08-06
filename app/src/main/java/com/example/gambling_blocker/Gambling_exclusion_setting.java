@@ -38,9 +38,6 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gambling_exclusion_setting);
         Inlitizae_UI();
-        inflater = (LayoutInflater)getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        step2view = inflater.inflate(R.layout.gambling_exclusion_setting2,null);
-        step3view = inflater.inflate(R.layout.gambling_exclusion_setting3,null);
     }
 
     private void Inlitizae_UI()
@@ -54,6 +51,30 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
         layout = (LinearLayout) findViewById(R.id.changelayout);
         step1 = (TextView)findViewById(R.id.textView12);
         spinner = (Spinner)findViewById(R.id.spinner);
+        inflater = (LayoutInflater)getBaseContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        step2view = inflater.inflate(R.layout.gambling_exclusion_setting2,null);
+        step3view = inflater.inflate(R.layout.gambling_exclusion_setting3,null);
+        switch_button = (Switch)step3view.findViewById(R.id.switch1);
+        switch_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean on = (switch_button).isChecked();
+                if (on)
+                {
+                    Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
+                    if(intent!=null)
+                    {
+                        startActivityForResult(intent,0);
+                    }
+                    else{
+                        onActivityResult(0,RESULT_OK,null);
+                    }
+                }
+                else {
+                    stopService(new Intent(getApplicationContext(),Gambling_Block_Service.class));
+                }
+            }
+        });
         Setspinner();
     }
 
@@ -61,10 +82,10 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
     public void onClick(View view) {
         switch (view.getId())
         {
-            case R.id.button7:
+            case R.id.button7: // when click the back button
                 ProgressbarandBackButton();
                 break;
-            case R.id.button8:
+            case R.id.button8: // when click the next button
                 ProgressbarandNextButton();
                 break;
         }
@@ -106,14 +127,20 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
         switch (stateProgressBar.getCurrentStateNumber())
         {
             case 3:
-                stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.TWO);
-                layout.removeView(step3view);
-                AddStep2View();
+                if(switch_button.isChecked())
+                {
+                    Toast.makeText(getApplicationContext(),"The service has been enabled,you cannot return",Toast.LENGTH_LONG).show();
+                }
+                else {
+                    stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.TWO);
+                    layout.removeView(step3view);
+                    AddStep2View();
+                }
                 break;
             case 2:
-                stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.ONE);
-                layout.removeView(step2view);
-                DisplaySpinner();
+                    stateProgressBar.setCurrentStateNumber(StateProgressBar.StateNumber.ONE);
+                    layout.removeView(step2view);
+                    DisplaySpinner();
                 break;
         }
     }
@@ -134,29 +161,9 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
 
     private void AddStep3View()
     {
-        switch_button = (Switch)step3view.findViewById(R.id.switch1);
         layout.removeView(step2view);
         layout.addView(step3view);
-        switch_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                boolean on = (switch_button).isChecked();
-                if (on)
-                {
-                    Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
-                    if(intent!=null)
-                    {
-                        startActivityForResult(intent,0);
-                    }
-                    else{
-                        onActivityResult(0,RESULT_OK,null);
-                    }
-                }
-                else {
-                    stopService(new Intent(getApplicationContext(),Gambling_Block_Service.class));
-                }
-            }
-        });
+
     }
 
     private void HideSpinner()

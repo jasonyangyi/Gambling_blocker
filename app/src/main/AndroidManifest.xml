@@ -59,6 +59,10 @@
         <activity
             android:name=".Gambling_exclusion_setting"
             android:label="Gambling_exclusion" />
+
+        <activity android:name=".Parental_control_setting"
+            android:label="Parental control">
+        </activity>
     </application>
 
 </manifest>
