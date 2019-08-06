@@ -26,13 +26,7 @@ public class HomeScreen extends AppCompatActivity {
         setContentView(R.layout.homescreen);
 
         Inlitialize_Home_screen();// this function is used to inlitialize the UI of  home screen
-        if(user==null)
-        {
-            Toast.makeText(getApplicationContext(),"User not logged in",Toast.LENGTH_LONG).show();
-        }
-        else {
             user = FirebaseAuth.getInstance();
-        }
     }
 
     private void setUpViewpager(ViewPager viewpager)
