@@ -1,39 +1,50 @@
 package com.example.gambling_blocker;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.VpnService;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
-import android.util.Log;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
-
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 
 public class Gambling_Block_Service extends VpnService {
 
     private ParcelFileDescriptor vpnInterface;
     private Thread vpnThread;
-    private Builder builder;
+    private Builder builder = new Builder();
+    private BroadcastReceiver stopvpn = new BroadcastReceiver() { // create a local broadcast
+        @Override
+        public void onReceive(Context context, Intent intent) {
+          if("stop".equals(intent.getAction())){
+              Stopvpn();
+        }
+    }};
 
     @Override
     public void onCreate() {
-        super.onCreate();
+        LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
+        bm.registerReceiver(stopvpn,new IntentFilter("stop"));
+     // we need to register this broadcast
+     //   Toast.makeText(getApplicationContext(),"Has been registered",Toast.LENGTH_LONG).show();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
 
        vpnThread = new Thread(new Runnable() {
             @Override
             public void run()
             {
                 // create a vpn tunnel interface
-                builder = new Builder();
+
                vpnInterface = builder.setSession("Gambling site blocker") // configure the vpn tunnel with parameters
                        .addAddress("192.168.0.1",24)
                        .addDnsServer("8.8.8.8")
@@ -54,9 +65,6 @@ public class Gambling_Block_Service extends VpnService {
                 {
                     e.printStackTrace();
                 }
-
-
-
             }
         });
 
@@ -70,19 +78,16 @@ public class Gambling_Block_Service extends VpnService {
         return null;
     }
 
-    @Override
-    public void onRevoke() {
-        super.onRevoke();
-    }
+
+
 
     private void Stopvpn()
     {
         if(vpnThread!=null)
         {
-            vpnThread.interrupt();
+            vpnThread.interrupt(); // interrupt the thread
             try{
-                vpnInterface.close();
-                vpnInterface =null;
+                vpnInterface.close(); // close the tunnel
             }catch (IOException e){
                 e.printStackTrace();
             }
@@ -93,8 +98,6 @@ public class Gambling_Block_Service extends VpnService {
 
     @Override
     public void onDestroy() { // stop the service
-        Stopvpn();
-     Toast.makeText(getApplicationContext(),"The service has been stoped",Toast.LENGTH_LONG).show();
 
     }
 }

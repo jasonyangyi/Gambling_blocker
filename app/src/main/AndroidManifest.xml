@@ -15,15 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service
-            android:name=".MyService"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="android.permission.BIND_VPN_SERVICE">
-            <intent-filter>
-                <action android:name="android.net.VpnService" />
-            </intent-filter>
-        </service>
+
         <service
             android:name=".Gambling_Block_Service"
             android:enabled="true"

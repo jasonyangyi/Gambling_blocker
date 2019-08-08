@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +39,7 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gambling_exclusion_setting);
         Inlitizae_UI();
+
     }
 
     private void Inlitizae_UI()
@@ -71,7 +73,9 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
                     }
                 }
                 else {
-                    stopService(new Intent(getApplicationContext(),Gambling_Block_Service.class));
+                  //  stopService(new Intent(getApplicationContext(),Gambling_Block_Service.class));
+                    Intent intent = new Intent("stop");
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 }
             }
         });
@@ -95,7 +99,6 @@ public class Gambling_exclusion_setting extends AppCompatActivity implements Vie
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
            if(resultCode==RESULT_OK)
            {
-
                startService( new Intent(getApplicationContext(),Gambling_Block_Service.class));
            }
     }

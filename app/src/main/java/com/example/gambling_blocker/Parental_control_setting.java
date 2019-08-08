@@ -1,8 +1,11 @@
 package com.example.gambling_blocker;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.VpnService;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -84,6 +87,28 @@ public class Parental_control_setting extends AppCompatActivity implements View.
         step3view = inflater.inflate(R.layout.parental_control_setting3,null);
         step4view = inflater.inflate(R.layout.parental_control_setting4,null);
         switch2 = (Switch)step4view.findViewById(R.id.switch2);
+        switch2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                boolean on = (switch2).isChecked();
+                if (on)
+                {
+                    Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
+                    if(intent!=null)
+                    {
+                        startActivityForResult(intent,0);
+                    }
+                    else{
+                        onActivityResult(0,RESULT_OK,null);
+                    }
+                }
+                else {
+                    //  stopService(new Intent(getApplicationContext(),Gambling_Block_Service.class));
+                    Intent intent = new Intent("stop");
+                    LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                }
+            }
+        });
         spinner2 = (Spinner)step2view.findViewById(R.id.spinner2);
         Setspinner();
     }
@@ -177,5 +202,13 @@ public class Parental_control_setting extends AppCompatActivity implements View.
         setPassword_tv.setVisibility(View.VISIBLE);
         setpassword.setVisibility(View.VISIBLE);
         confirmpassword.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(resultCode==RESULT_OK)
+        {
+            startService( new Intent(getApplicationContext(),Gambling_Block_Service.class));
+        }
     }
 }
