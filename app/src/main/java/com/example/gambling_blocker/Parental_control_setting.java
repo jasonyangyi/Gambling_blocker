@@ -1,15 +1,20 @@
 package com.example.gambling_blocker;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -19,10 +24,9 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.kofigyan.stateprogressbar.StateProgressBar;
 
-public class Parental_control_setting extends AppCompatActivity implements View.OnClickListener {
+public class Parental_control_setting extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemSelectedListener {
     private Button Back,Next;
     private StateProgressBar stateProgressBar2;
     private EditText setpassword, confirmpassword;
@@ -34,7 +38,9 @@ public class Parental_control_setting extends AppCompatActivity implements View.
     private Spinner spinner2;
     private CheckBox checkBox;
     private Switch switch2;
-
+    private String spinnervalue; // the spinner value when the item selected
+    private long servicetime;
+    private String servicename = "Parental Control";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -86,11 +92,26 @@ public class Parental_control_setting extends AppCompatActivity implements View.
         step2view = inflater.inflate(R.layout.parental_control_seting2,null);
         step3view = inflater.inflate(R.layout.parental_control_setting3,null);
         step4view = inflater.inflate(R.layout.parental_control_setting4,null);
+        spinner2 = (Spinner)step2view.findViewById(R.id.spinner2);
+        spinner2.setOnItemSelectedListener(this);
+        Setspinner();
         switch2 = (Switch)step4view.findViewById(R.id.switch2);
         switch2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 boolean on = (switch2).isChecked();
+                new CountDownTimer(servicetime, 1000) {
+
+                    public void onTick(long millisUntilFinished) { }
+
+                    public void onFinish() {
+                        Intent intent = new Intent("stop");
+                        LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
+                        switch2.setChecked(false);
+                        switch2.setClickable(true);
+                        ShowExpiredDialog();
+                    }
+                }.start();
                 if (on)
                 {
                     Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
@@ -103,14 +124,12 @@ public class Parental_control_setting extends AppCompatActivity implements View.
                     }
                 }
                 else {
-                    //  stopService(new Intent(getApplicationContext(),Gambling_Block_Service.class));
                     Intent intent = new Intent("stop");
                     LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
                 }
             }
         });
-        spinner2 = (Spinner)step2view.findViewById(R.id.spinner2);
-        Setspinner();
+
     }
 
     private boolean Isthesamepassword()
@@ -209,6 +228,67 @@ public class Parental_control_setting extends AppCompatActivity implements View.
         if(resultCode==RESULT_OK)
         {
             startService( new Intent(getApplicationContext(),Gambling_Block_Service.class));
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent i1 = new Intent(getApplicationContext(),Successful_configuration.class);
+                    i1.putExtra("Name",servicename);
+                    i1.putExtra("Duration",servicetime);
+                    startActivity(i1);
+                }
+            },5000);
         }
+    }
+
+    @Override
+    public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        spinnervalue = spinner2.getSelectedItem().toString();
+        Toast.makeText(getApplicationContext(),"You selected "+spinnervalue,Toast.LENGTH_LONG).show();
+        servicetime = getServicetime(spinnervalue);
+        Toast.makeText(getApplicationContext(),"The duration is "+servicetime,Toast.LENGTH_LONG).show();
+    }
+
+    private long getServicetime(String value)
+    {
+        long servicetime = 0;
+        if(value.equals("10s"))
+        {
+            servicetime = 10000;
+        }
+        else if(value.equals("24h")){
+            servicetime = 86400000;
+        }
+        else if(value.equals("one week")){
+            servicetime = 604800000;
+        }
+        else if(value.equals("one month")){
+            servicetime = 2592000000l;
+        }
+        else if(value.equals("six months")){
+            servicetime = 15552000000l;
+        }
+        else if(value.equals("one year")){
+            servicetime = 31104000000l;
+        }
+        return servicetime;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) { }
+
+    private void ShowExpiredDialog()
+    {
+        AlertDialog.Builder builder = new AlertDialog.Builder(Parental_control_setting.this);
+        builder.setTitle("Reminder");
+        builder.setMessage("We are sorry to tell you that the service has been expired");
+        builder.setIcon(R.mipmap.logo_gambling_blocker);
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.cancel();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

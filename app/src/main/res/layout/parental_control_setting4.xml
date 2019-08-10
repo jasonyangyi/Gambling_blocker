@@ -17,12 +17,12 @@
 
     <Switch
         android:id="@+id/switch2"
-        android:layout_width="163dp"
+        android:layout_width="218dp"
         android:layout_height="50dp"
         android:layout_marginLeft="100dp"
         android:layout_marginTop="0dp"
         android:gravity="center"
-        android:text="Block sites"
+        android:text="Parental Control"
         android:textColor="@color/colorPrimary"
         android:textSize="18dp"
         android:textStyle="bold" />

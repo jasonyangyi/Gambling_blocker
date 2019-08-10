@@ -49,10 +49,7 @@ public class Gambling_Block_Service extends VpnService {
                        .addAddress("192.168.0.1",24)
                        .addDnsServer("8.8.8.8")
                        .addRoute("0.0.0.0",0).establish();
-
                //
-
-
                FileInputStream in = new FileInputStream(vpnInterface.getFileDescriptor());
                FileOutputStream out = new FileOutputStream(vpnInterface.getFileDescriptor());
 

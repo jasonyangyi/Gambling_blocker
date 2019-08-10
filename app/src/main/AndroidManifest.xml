@@ -31,7 +31,6 @@
             android:theme="@style/AppTheme2">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -51,6 +50,10 @@
         <activity
             android:name=".Gambling_exclusion_setting"
             android:label="Gambling_exclusion" />
+
+        <activity android:name=".Successful_configuration"
+            >
+        </activity>
 
         <activity android:name=".Parental_control_setting"
             android:label="Parental control">
