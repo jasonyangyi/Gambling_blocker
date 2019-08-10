@@ -8,10 +8,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
-public class Successful_configuration extends AppCompatActivity {
+public class Successful_configuration extends AppCompatActivity implements View.OnClickListener {
 
     private String Service;
     private TextView tvtitle,tvinformation;
@@ -20,6 +21,7 @@ public class Successful_configuration extends AppCompatActivity {
     private String service;
     private long duration;
     private String duration2;
+    private String key;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +30,7 @@ public class Successful_configuration extends AppCompatActivity {
      Intent intent = getIntent();
      service = intent.getStringExtra("Name");
      duration = intent.getLongExtra("Duration",0);
+     key = intent.getStringExtra("Key");
      duration2 = getDuration(duration);
      if(service.equals("Gambling exclusion")){
          tvinformation.setText("Restriction will be lifted in "+duration2);
@@ -45,6 +48,7 @@ public class Successful_configuration extends AppCompatActivity {
         tvtitle = (TextView)findViewById(R.id.textView_title);
         tvinformation = (TextView)findViewById(R.id.textView20);
         edit = (Button) findViewById(R.id.button_edit);
+        edit.setOnClickListener(this);
         password = (CheckBox)findViewById(R.id.checkBox4);
     }
 
@@ -70,10 +74,20 @@ public class Successful_configuration extends AppCompatActivity {
         else if(time == 31104000000l){
             value = "one year";
         }
-
         return value;
     }
 
 
-
+    @Override
+    public void onClick(View view) {
+        switch (view.getId())
+        {
+            case R.id.button_edit:
+                Intent intent = new Intent(getApplicationContext(),Password_input.class);
+                intent.putExtra("password",key);
+                startActivity(intent);
+                finish();
+                break;
+        }
+    }
 }

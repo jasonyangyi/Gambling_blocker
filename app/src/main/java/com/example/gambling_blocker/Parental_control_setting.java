@@ -1,8 +1,10 @@
 package com.example.gambling_blocker;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.VpnService;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -41,13 +43,32 @@ public class Parental_control_setting extends AppCompatActivity implements View.
     private String spinnervalue; // the spinner value when the item selected
     private long servicetime;
     private String servicename = "Parental Control";
+    private String key;
+    private BroadcastReceiver closethebutton = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch2.setClickable(true);
+            switch2.setChecked(false);
+        }
+    };
+
+    private BroadcastReceiver openthebutton = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch2.setClickable(false);
+            switch2.setChecked(true);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.parental_control_setting);
+        LocalBroadcastManager close = LocalBroadcastManager.getInstance(this);
+        close.registerReceiver(closethebutton,new IntentFilter("close"));
+        LocalBroadcastManager open = LocalBroadcastManager.getInstance(this);
+        open.registerReceiver(openthebutton,new IntentFilter("open"));
         Intialize_UI();
-
     }
 
     @Override
@@ -232,8 +253,10 @@ public class Parental_control_setting extends AppCompatActivity implements View.
                 @Override
                 public void run() {
                     Intent i1 = new Intent(getApplicationContext(),Successful_configuration.class);
-                    i1.putExtra("Name",servicename);
+                    i1.putExtra("Name",servicename); // use putExtra method to pass the data between the activities
                     i1.putExtra("Duration",servicetime);
+                    key = setpassword.getText().toString();
+                    i1.putExtra("Key",key);
                     startActivity(i1);
                 }
             },5000);

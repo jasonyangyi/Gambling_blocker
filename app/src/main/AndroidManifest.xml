@@ -54,6 +54,8 @@
         <activity android:name=".Successful_configuration"
             >
         </activity>
+        <activity android:name=".Password_input">
+        </activity>
 
         <activity android:name=".Parental_control_setting"
             android:label="Parental control">
