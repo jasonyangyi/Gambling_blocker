@@ -83,7 +83,7 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
 
                             public void onFinish() {
                                Remove_exclusion();
-                                ShowExpiredDialog();
+                                Close_button();
                             }
                         }.start();
                         Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
