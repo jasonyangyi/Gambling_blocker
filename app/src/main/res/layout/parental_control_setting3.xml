@@ -9,15 +9,15 @@
         android:layout_width="200dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
-        android:text="Step2: we provide a vpn network to prevent user from gambling webistes tick the box to aggree that service"
+        android:text="Step3: we provide a vpn network to prevent user from gambling websites tick the box to agree that service"
         android:textStyle="bold"
         android:textColor="@color/colorPrimary"
-        android:layout_marginLeft="50dp" />
+        android:layout_marginLeft="15dp" />
 
     <CheckBox
         android:id="@+id/checkBox3"
         android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:text="I aggree that"
+        android:text="I agree that"
         android:layout_marginLeft="150dp" />
 </LinearLayout>

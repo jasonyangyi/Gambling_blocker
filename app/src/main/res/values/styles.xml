@@ -9,7 +9,19 @@
     </style>
 
     <style name="AppTheme2" parent="Theme.AppCompat.Light.NoActionBar">
-
+    </style>
+    <style name="GamblingEditTextStyle" parent="android:Widget.EditText">
+        <item name="android:textColor">#400000</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">10dp</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:background">@mipmap/splash_background</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style name="MyButton" parent="TextAppearance.AppCompat.Widget.Button.Borderless.Colored">
+        <item name="android:textColor">#FFFF</item>
+        <item name="android:background">#58ACFA</item>
+        <item name="android:textSize">15dp</item>
     </style>
 
 

@@ -1,6 +1,5 @@
 package com.example.gambling_blocker;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.VpnService;
 import android.os.Bundle;
@@ -8,7 +7,6 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,7 +35,6 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
         Intent intent =getIntent();
         password = intent.getStringExtra("password");
         Toast.makeText(getApplicationContext(),"the key is "+password,Toast.LENGTH_LONG).show();
-
     }
 
     private void Initialize_UI()
@@ -77,25 +74,31 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
                     { // change the exclusion
                         Remove_exclusion();
                         Close_button();
-                        new CountDownTimer(duration, 1000) {
 
-                            public void onTick(long millisUntilFinished) { }
+                        new Handler().postDelayed(new Runnable() { // use this handler to delay the action for about 3 seconds
+                            @Override
+                            public void run() {
+                                new CountDownTimer(duration, 1000) {
 
-                            public void onFinish() {
-                               Remove_exclusion();
-                                Close_button();
+                                    public void onTick(long millisUntilFinished) { }
+
+                                    public void onFinish() {
+                                        Remove_exclusion();
+                                        Close_button();
+                                    }
+                                }.start();
+                                Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
+                                if(intent!=null)
+                                {
+                                    startActivityForResult(intent,0);
+                                }
+                                else{
+                                    onActivityResult(0,RESULT_OK,null);
+                                }
+
+                                Open_button();
                             }
-                        }.start();
-                        Intent intent = VpnService.prepare(getApplicationContext());// prepare the user action
-                        if(intent!=null)
-                        {
-                            startActivityForResult(intent,0);
-                        }
-                        else{
-                            onActivityResult(0,RESULT_OK,null);
-                        }
-                         Open_button();
-                        Toast.makeText(getApplicationContext(),"The new service"+duration+"has been made",Toast.LENGTH_LONG).show();
+                        },3000);
                         finish();
                     }
                     if(remove.isChecked()==true)
@@ -128,13 +131,13 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
+
+
     private void Open_button()
     {
         Intent intent = new Intent("open");
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
-
-
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
@@ -177,19 +180,4 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
         return servicetime;
     }
 
-    private void ShowExpiredDialog()
-    {
-        AlertDialog.Builder builder = new AlertDialog.Builder(Password_input.this);
-        builder.setTitle("Reminder");
-        builder.setMessage("We are sorry to tell you that the service has been expired");
-        builder.setIcon(R.mipmap.logo_gambling_blocker);
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.cancel();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 }

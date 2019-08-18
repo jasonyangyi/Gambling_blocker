@@ -1,7 +1,5 @@
 package com.example.gambling_blocker;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -188,7 +186,6 @@ public class TCP_data_output implements Runnable {
             if (tcb.status == TCB.TCBStatus.SYN_RECEIVED)
             {
                 tcb.status = TCB.TCBStatus.ESTABLISHED;
-
                 selector.wakeup();
                 tcb.selectionKey = outputChannel.register(selector, SelectionKey.OP_READ, tcb);
                 tcb.waitingForNetworkData = true;

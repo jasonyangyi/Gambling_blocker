@@ -8,8 +8,9 @@
 
     <Button
         android:id="@+id/button4"
-        android:layout_width="121dp"
-        android:layout_height="47dp"
+        style="@style/MyButton"
+        android:layout_width="136dp"
+        android:layout_height="39dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"

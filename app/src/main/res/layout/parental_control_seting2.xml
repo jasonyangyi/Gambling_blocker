@@ -11,7 +11,7 @@
         android:layout_height="35dp"
         android:layout_marginRight="100dp"
         android:layout_marginLeft="50dp"
-        android:text="Step 1: Select an exclusion length"
+        android:text="Step 2: Select an exclusion length"
         android:textColor="@color/colorPrimary"
         android:textSize="18dp"
         android:textStyle="bold" />

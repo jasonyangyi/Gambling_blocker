@@ -9,7 +9,6 @@ import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -47,8 +46,23 @@ public class Gambling_Block_Service extends VpnService {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        configureVPN();
+        startVPN();
+       Toast.makeText(getApplicationContext(),"The service has been started",Toast.LENGTH_LONG).show();
+        return START_STICKY;
+    }
 
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    private void startVPN()
+            /*
+            this method used to start the VPN service
+            the data pass between VPN interface and physical network
+             */
+    {
+        configureVPN();
         try {
             udpSelector = Selector.open(); // open the channel
             tcpSelector = Selector.open();
@@ -67,15 +81,8 @@ public class Gambling_Block_Service extends VpnService {
             e.printStackTrace();
             Toast.makeText(getApplicationContext(),"Error! the service has terminated!",Toast.LENGTH_LONG).show();
         }
-
-       Toast.makeText(getApplicationContext(),"The service has been started",Toast.LENGTH_LONG).show();
-        return START_STICKY;
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
 
     /*
     set the parameters to the VPN interface
@@ -83,17 +90,11 @@ public class Gambling_Block_Service extends VpnService {
      */
     private void configureVPN()
     {
-      if(vpninterface==null)
-      {
           Builder builder = new Builder();
           builder.addAddress("192.168.0.1", 24);
           builder.addRoute("0.0.0.0", 0);
           vpninterface = builder.setSession("Gambling blocker").establish();
-      }
-
     }
-
-
 
     private void Stopvpn()
     {
@@ -101,13 +102,13 @@ public class Gambling_Block_Service extends VpnService {
         this method used to close the VPN interface
         and selector channels
          */
+        Toast.makeText(getApplicationContext(),"The service has been stoped",Toast.LENGTH_LONG).show();
         executorService.shutdown();
         devicetonetwork_udp = null;
         devicetonetwork_tdp = null;
         networktodevice = null;
         ByteBufferPool.clear();
         close(udpSelector,tcpSelector,vpninterface);
-        stopSelf();
     }
 
     private void close(Closeable...resources)

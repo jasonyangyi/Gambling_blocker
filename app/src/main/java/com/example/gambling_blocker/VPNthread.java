@@ -1,8 +1,5 @@
 package com.example.gambling_blocker;
 
-import android.util.Log;
-import android.widget.Toast;
-
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
