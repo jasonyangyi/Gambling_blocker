@@ -8,8 +8,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -24,13 +22,13 @@ public class HomeScreen extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.homescreen);
-
         Inlitialize_Home_screen();// this function is used to inlitialize the UI of  home screen
             user = FirebaseAuth.getInstance();
     }
 
     private void setUpViewpager(ViewPager viewpager)
     {
+        // use view pager adapter to store the fragment, use view pager to create the  tab view
         ViewpagerAdapter viewpagerAdapter = new ViewpagerAdapter(getSupportFragmentManager());
         viewpagerAdapter.addFragment(new Gambling_exclusion(),"Gambling exclusion");
         viewpagerAdapter.addFragment(new Parental_control(),"Parental control");
@@ -43,15 +41,15 @@ public class HomeScreen extends AppCompatActivity {
         tabLayout = (TabLayout)findViewById(R.id.tabs);
         viewpager = (ViewPager)findViewById(R.id.viewpager);
         setUpViewpager(viewpager);
-        tabLayout.setupWithViewPager(viewpager);
-        tabLayout.getTabAt(0).setIcon(R.mipmap.gambling_exclusion);
+        tabLayout.setupWithViewPager(viewpager);// link the viewpager and tab layout together
+        tabLayout.getTabAt(0).setIcon(R.mipmap.gambling_exclusion); // set the icon of the tab
         tabLayout.getTabAt(1).setIcon(R.mipmap.parental_control);
 
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.appmenu,menu);
+        getMenuInflater().inflate(R.menu.appmenu,menu); // set the view of the menu
         return true;
     }
 
@@ -59,7 +57,7 @@ public class HomeScreen extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
        switch (item.getItemId())
        {
-           case R.id.action_Sign_out:
+           case R.id.action_Sign_out: // if this option selected, the sign out function invoked
                User_signout();
                return true;
            default:
@@ -69,8 +67,8 @@ public class HomeScreen extends AppCompatActivity {
 
     private void User_signout()
     {
-        user.signOut();
-        finish();
+        user.signOut();// the function provided by google api
+        finish(); //  finish the current activity and return back to the home screen activity
     }
 
 }

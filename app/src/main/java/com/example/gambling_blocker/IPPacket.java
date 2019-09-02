@@ -6,18 +6,32 @@ import java.nio.ByteBuffer;
 
 public class IPPacket {
 
-    // build the IP packet
+    /*
+    this structure is used to build the data structure of the IP packet
+     */
     public static final int IP4_HEADER_SIZE = 20;
     public static final int TCP_HEADER_SIZE = 20;
     public static final int UDP_HEADER_SIZE = 8;
 
+    /*
+     different types of ip header
+     */
     public IP4Header ip4Header;
     public TCPHeader tcpHeader;
     public UDPHeader udpHeader;
+
+    /*
+    the variable data
+     */
     public ByteBuffer backingBuffer;
 
     private boolean isTCP;
     private boolean isUDP;
+
+    /*
+    this constructor used
+    to build the new IP packet
+     */
 
     public IPPacket(ByteBuffer buffer) throws UnknownHostException {
         this.ip4Header = new IP4Header(buffer);
@@ -55,18 +69,29 @@ public class IPPacket {
 
     public void swapSourceAndDestination()
     {
+        /*
+        this function used to build the new source address
+        and destination address
+        prepare for the build of new packet
+         */
         InetAddress newSourceAddress = ip4Header.destinationAddress;
         ip4Header.destinationAddress = ip4Header.sourceAddress;
         ip4Header.sourceAddress = newSourceAddress;
 
         if (isUDP)
         {
+            /*
+            for UDP packet, change the UDP header information
+             */
             int newSourcePort = udpHeader.destinationPort;
             udpHeader.destinationPort = udpHeader.sourcePort;
             udpHeader.sourcePort = newSourcePort;
         }
         else if (isTCP)
         {
+            /*
+            for TCP packet, change the TCP header information
+             */
             int newSourcePort = tcpHeader.destinationPort;
             tcpHeader.destinationPort = tcpHeader.sourcePort;
             tcpHeader.sourcePort = newSourcePort;
@@ -75,6 +100,12 @@ public class IPPacket {
 
     public void updateTCPBuffer(ByteBuffer buffer, byte flags, long sequenceNum, long ackNum, int payloadSize)
     {
+        /*
+        this function used to update some attributes of
+        TCP buffer:
+        flags, offset, sequence number ackNum (three hand shake protocol),
+        checksum
+         */
         buffer.position(0);
         fillHeader(buffer);
         backingBuffer = buffer;
@@ -88,13 +119,12 @@ public class IPPacket {
         tcpHeader.acknowledgementNumber = ackNum;
         backingBuffer.putInt(IP4_HEADER_SIZE + 8, (int) ackNum);
 
-        // Reset header size, since we don't need options
+        // Reset the size of the header
         byte dataOffset = (byte) (TCP_HEADER_SIZE << 2);
         tcpHeader.dataOffsetAndReserved = dataOffset;
         backingBuffer.put(IP4_HEADER_SIZE + 12, dataOffset);
 
         updateTCPChecksum(payloadSize);
-
         int ip4TotalLength = IP4_HEADER_SIZE + TCP_HEADER_SIZE + payloadSize;
         backingBuffer.putShort(2, (short) ip4TotalLength);
         ip4Header.totalLength = ip4TotalLength;
@@ -104,7 +134,11 @@ public class IPPacket {
 
     public void updateUDPBuffer(ByteBuffer buffer, int payloadSize)
     {
-        buffer.position(0);
+       /*
+        this function used to update some attributes of
+        UDP buffer: checksum
+        */
+        buffer.position(0); // start  the 0 index when write the buffer
         fillHeader(buffer);
         backingBuffer = buffer;
 
@@ -125,10 +159,17 @@ public class IPPacket {
 
     private void updateIP4Checksum()
     {
+        /*
+        this function is use to
+        update the IP 4 checksum
+        this calculation is done by router
+        once datagram passes the router
+        the checksum will be updated
+         */
         ByteBuffer buffer = backingBuffer.duplicate();
         buffer.position(0);
 
-        // Clear previous checksum
+        // remove the previous checksum
         buffer.putShort(10, (short) 0);
 
         int ipLength = ip4Header.headerLength;
@@ -148,6 +189,10 @@ public class IPPacket {
 
     private void updateTCPChecksum(int payloadSize)
     {
+        /*
+        this function is used to update the checksum of TCP
+        packet
+         */
         int sum = 0;
         int tcpLength = TCP_HEADER_SIZE + payloadSize;
 
@@ -161,7 +206,7 @@ public class IPPacket {
         sum += IP4Header.TransportProtocol.TCP.getNumber() + tcpLength;
 
         buffer = backingBuffer.duplicate();
-        // Clear previous checksum
+        //  remove the previous the checksum
         buffer.putShort(IP4_HEADER_SIZE + 16, (short) 0);
 
         // Calculate TCP segment checksum
@@ -193,7 +238,11 @@ public class IPPacket {
 
     public static class IP4Header
     {
-        public byte version;
+        /*
+        this class defines the data structure of
+        the IP4Header
+         */
+        public byte version; // usually IP v4
         public byte IHL;
         public int headerLength;
         public short typeOfService;
@@ -205,13 +254,10 @@ public class IPPacket {
         private short protocolNum;
         public TransportProtocol protocol;
         public int headerChecksum;
-
         public InetAddress sourceAddress;
         public InetAddress destinationAddress;
 
-        public int optionsAndPadding;
-
-        private enum TransportProtocol // define the transport protocol
+        private enum TransportProtocol // define the transport protocol: TCP UDP and other
         {
             TCP(6),
             UDP(17),
@@ -242,6 +288,11 @@ public class IPPacket {
 
         private IP4Header(ByteBuffer buffer) throws UnknownHostException
         {
+            /*
+            The constructor of IP4Header class
+            use this to build an IP4Header object
+            when it gets a buffer
+             */
             byte versionAndIHL = buffer.get();
             this.version = (byte) (versionAndIHL >> 4);
             this.IHL = (byte) (versionAndIHL & 0x0F);
@@ -263,12 +314,13 @@ public class IPPacket {
 
             buffer.get(addressBytes, 0, 4);
             this.destinationAddress = InetAddress.getByAddress(addressBytes);
-
-            //this.optionsAndPadding = buffer.getInt();
         }
 
         public void fillHeader(ByteBuffer buffer)
         {
+            /*
+            put all of the information into the IP4 header to update that
+             */
             buffer.put((byte) (this.version << 4 | this.IHL));
             buffer.put((byte) this.typeOfService);
             buffer.putShort((short) this.totalLength);
@@ -286,6 +338,9 @@ public class IPPacket {
         @Override
         public String toString()
         {
+            /*
+            use to String method to print the IP4Header information during the testing
+             */
             final StringBuilder sb = new StringBuilder("IP4Header{");
             sb.append("version=").append(version);
             sb.append(", IHL=").append(IHL);
@@ -304,19 +359,19 @@ public class IPPacket {
 
     public static class TCPHeader
     {
+        /*
+        this class used to build a TCPHeader object
+         */
         public static final int FIN = 0x01;
         public static final int SYN = 0x02;
         public static final int RST = 0x04;
         public static final int PSH = 0x08;
         public static final int ACK = 0x10;
         public static final int URG = 0x20;
-
         public int sourcePort;
         public int destinationPort;
-
         public long sequenceNumber;
         public long acknowledgementNumber;
-
         public byte dataOffsetAndReserved;
         public int headerLength;
         public byte flags;
@@ -383,6 +438,9 @@ public class IPPacket {
 
         private void fillHeader(ByteBuffer buffer)
         {
+            /*
+            put all of the information into TCP header object
+             */
             buffer.putShort((short) sourcePort);
             buffer.putShort((short) destinationPort);
 
@@ -439,9 +497,11 @@ public class IPPacket {
 
         private void fillHeader(ByteBuffer buffer)
         {
+            /*
+            put all of the information into the UDP header object
+             */
             buffer.putShort((short) this.sourcePort);
             buffer.putShort((short) this.destinationPort);
-
             buffer.putShort((short) this.length);
             buffer.putShort((short) this.checksum);
         }

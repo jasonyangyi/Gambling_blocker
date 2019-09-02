@@ -21,15 +21,19 @@ import java.util.concurrent.Executors;
 public class Gambling_Block_Service extends VpnService {
 
     private ParcelFileDescriptor vpninterface = null; // create an instance of FileDescriptor to get the IP data packet
-    private ConcurrentLinkedQueue<IPPacket> devicetonetwork_udp; //  these three queues used to store the different kinds of packets
-    private ConcurrentLinkedQueue<IPPacket> devicetonetwork_tdp;
-    private ConcurrentLinkedQueue<ByteBuffer> networktodevice;
-    private ExecutorService executorService;
-    private Selector udpSelector;
+    private ConcurrentLinkedQueue<IPPacket> devicetonetwork_udp; //  this queue stores the udp data packet sent from device to the network
+    private ConcurrentLinkedQueue<IPPacket> devicetonetwork_tdp; // the tcp data packet sent from device to network
+    private ConcurrentLinkedQueue<ByteBuffer> networktodevice; // the outgoing packet from network to device
+    private ExecutorService executorService;  // run multiple  tasks asynchronously in the background
+    private Selector udpSelector; // use selector to manage multiple input/output channels
     private Selector tcpSelector;
 
 
     private BroadcastReceiver stopvpn = new BroadcastReceiver() { // create a local broadcast
+        /*
+        if this receiver receive the stop command
+        invoke the stopVPN method to stop the VPN
+         */
         @Override
         public void onReceive(Context context, Intent intent) {
           if("stop".equals(intent.getAction())){
@@ -37,9 +41,11 @@ public class Gambling_Block_Service extends VpnService {
         }
     }};
 
-
     @Override
     public void onCreate() {
+        /*
+        use LocalBroadcastManger class to register this receiver
+         */
         LocalBroadcastManager bm = LocalBroadcastManager.getInstance(this);
         bm.registerReceiver(stopvpn,new IntentFilter("stop"));
     }
@@ -69,6 +75,12 @@ public class Gambling_Block_Service extends VpnService {
             devicetonetwork_udp = new ConcurrentLinkedQueue<>();
             devicetonetwork_tdp = new ConcurrentLinkedQueue<>();
             networktodevice = new ConcurrentLinkedQueue<>();
+            /*
+            invoke the newFixedThreadPool method
+            to create a thread pool which can store
+             5 threads: represent 5 different tasks
+             invoke the submit method to allocate the task to the executorService
+             */
             executorService = Executors.newFixedThreadPool(5);
             executorService.submit(new UDP_data_input(networktodevice, udpSelector));
             executorService.submit(new UDP_data_output(devicetonetwork_udp, udpSelector, this));
@@ -76,13 +88,11 @@ public class Gambling_Block_Service extends VpnService {
             executorService.submit(new TCP_data_output(devicetonetwork_tdp, networktodevice, tcpSelector, this));
             executorService.submit(new VPNthread(vpninterface.getFileDescriptor(),
                     devicetonetwork_udp, devicetonetwork_tdp, networktodevice));
-
         }catch (IOException e){
             e.printStackTrace();
             Toast.makeText(getApplicationContext(),"Error! the service has terminated!",Toast.LENGTH_LONG).show();
         }
     }
-
 
     /*
     set the parameters to the VPN interface
@@ -99,6 +109,8 @@ public class Gambling_Block_Service extends VpnService {
     private void Stopvpn()
     {
         /*
+        clear the queue
+        clear the ByteBuffer pool
         this method used to close the VPN interface
         and selector channels
          */
@@ -113,6 +125,9 @@ public class Gambling_Block_Service extends VpnService {
 
     private void close(Closeable...resources)
     {
+        /*
+        this method used to close any closable resources
+         */
         for (Closeable resource : resources)
         {
             try

@@ -49,12 +49,13 @@ public class TCP_data_output implements Runnable {
                 ByteBuffer payloadBuffer = currentPacket.backingBuffer;
                 currentPacket.backingBuffer = null;
                 ByteBuffer responseBuffer = ByteBufferPool.acquire();
+                // acquire the buffer from ByteBuffer pool
 
                 InetAddress destinationAddress = currentPacket.ip4Header.destinationAddress;
 
                 IPPacket.TCPHeader tcpHeader = currentPacket.tcpHeader;
-                int destinationPort = tcpHeader.destinationPort;
-                int sourcePort = tcpHeader.sourcePort;
+                int destinationPort = tcpHeader.destinationPort;  // define the destination port
+                int sourcePort = tcpHeader.sourcePort;  // define the source port
 
                 String ipAndPort = destinationAddress.getHostAddress() + ":" +
                         destinationPort + ":" + sourcePort;
@@ -62,13 +63,13 @@ public class TCP_data_output implements Runnable {
                 if (tcb == null)
                     initializeConnection(ipAndPort, destinationAddress, destinationPort,
                             currentPacket, tcpHeader, responseBuffer);
-                else if (tcpHeader.isSYN())
+                else if (tcpHeader.isSYN()) // if receive the SYN
                     processDuplicateSYN(tcb, tcpHeader, responseBuffer);
-                else if (tcpHeader.isRST())
+                else if (tcpHeader.isRST())  // if receives the RST
                     closeCleanly(tcb, responseBuffer);
-                else if (tcpHeader.isFIN())
+                else if (tcpHeader.isFIN())  // if receives the FIN
                     processFIN(tcb, tcpHeader, responseBuffer);
-                else if (tcpHeader.isACK())
+                else if (tcpHeader.isACK())  // if receives the ACK
                     processACK(tcb, tcpHeader, payloadBuffer, responseBuffer);
 
                 if (responseBuffer.position() == 0)
@@ -94,12 +95,13 @@ public class TCP_data_output implements Runnable {
                                       IPPacket currentPacket, IPPacket.TCPHeader tcpHeader, ByteBuffer responseBuffer)
             throws IOException
     {
-        currentPacket.swapSourceAndDestination();
+        currentPacket.swapSourceAndDestination(); // generate the new source address and destination address
         if (tcpHeader.isSYN())
         {
+            // if it sends the syn
             SocketChannel outputChannel = SocketChannel.open();
             outputChannel.configureBlocking(false);
-            vpnService.protect(outputChannel.socket());
+            vpnService.protect(outputChannel.socket()); // to avoid the loop
 
             TCB tcb = new TCB(ipAndPort, random.nextInt(Short.MAX_VALUE + 1), tcpHeader.sequenceNumber, tcpHeader.sequenceNumber + 1,
                     tcpHeader.acknowledgementNumber, outputChannel, currentPacket);
@@ -107,17 +109,17 @@ public class TCP_data_output implements Runnable {
 
             try
             {
-                outputChannel.connect(new InetSocketAddress(destinationAddress, destinationPort));
+                outputChannel.connect(new InetSocketAddress(destinationAddress, destinationPort)); // connect to the remote server
                 if (outputChannel.finishConnect())
                 {
-                    tcb.status = TCB.TCBStatus.SYN_RECEIVED;
+                    tcb.status = TCB.TCBStatus.SYN_RECEIVED; // if it receives the syn
                     currentPacket.updateTCPBuffer(responseBuffer, (byte) (IPPacket.TCPHeader.SYN | IPPacket.TCPHeader.ACK),
-                            tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
-                    tcb.mySequenceNum++; // SYN counts as a byte
+                            tcb.mySequenceNum, tcb.myAcknowledgementNum, 0); // use syn  and ACk to update the TCP buffer
+                    tcb.mySequenceNum++; //  sequence number +1
                 }
                 else
                 {
-                    tcb.status = TCB.TCBStatus.SYN_SENT;
+                    tcb.status = TCB.TCBStatus.SYN_SENT;  // if not connected prepare to be connected
                     selector.wakeup();
                     tcb.selectionKey = outputChannel.register(selector, SelectionKey.OP_CONNECT, tcb);
                     return;
@@ -132,6 +134,10 @@ public class TCP_data_output implements Runnable {
         }
         else
         {
+            /*
+            when it receive the RST
+            close the connection (an exception occurs)
+             */
             currentPacket.updateTCPBuffer(responseBuffer, (byte) IPPacket.TCPHeader.RST,
                     0, tcpHeader.sequenceNumber + 1, 0);
         }
@@ -140,6 +146,12 @@ public class TCP_data_output implements Runnable {
 
     private void processDuplicateSYN(TCB tcb, IPPacket.TCPHeader tcpHeader, ByteBuffer responseBuffer)
     {
+        /*
+        in TCP three hand-shake protocol
+        in one transmission block
+        if the SYN received
+        it returns ack = seq +1
+         */
         synchronized (tcb)
         {
             if (tcb.status == TCB.TCBStatus.SYN_SENT)
@@ -153,31 +165,54 @@ public class TCP_data_output implements Runnable {
 
     private void processFIN(TCB tcb, IPPacket.TCPHeader tcpHeader, ByteBuffer responseBuffer)
     {
+        /*
+        the process of the FIN is to close the TCP connection
+         */
         synchronized (tcb)
         {
             IPPacket referencePacket = tcb.referencePacket;
             tcb.myAcknowledgementNum = tcpHeader.sequenceNumber + 1;
             tcb.theirAcknowledgementNum = tcpHeader.acknowledgementNumber;
+            /*
+            the client receives the ack from the server
+            wait for the network data
+             */
 
             if (tcb.waitingForNetworkData)
             {
+                /*
+                in the waiting state
+                wait for the data to come in
+                update the TCP buffer
+                 */
                 tcb.status = TCB.TCBStatus.CLOSE_WAIT;
                 referencePacket.updateTCPBuffer(responseBuffer, (byte) IPPacket.TCPHeader.ACK,
                         tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
             }
             else
             {
+                /*
+                when it receives the last ack
+                no data transmission
+                update TCP buffer
+                 */
                 tcb.status = TCB.TCBStatus.LAST_ACK;
                 referencePacket.updateTCPBuffer(responseBuffer, (byte) (IPPacket.TCPHeader.FIN | IPPacket.TCPHeader.ACK),
                         tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
                 tcb.mySequenceNum++; // FIN counts as a byte
             }
         }
+        // put the updated buffer in the output queue
         outputQueue.offer(responseBuffer);
     }
 
     private void processACK(TCB tcb, IPPacket.TCPHeader tcpHeader, ByteBuffer payloadBuffer, ByteBuffer responseBuffer) throws IOException
     {
+        /*
+        this function is used to process
+        the ACK signal
+        in TCP connection and disconnection
+         */
         int payloadSize = payloadBuffer.limit() - payloadBuffer.position();
 
         synchronized (tcb)
@@ -217,7 +252,6 @@ public class TCP_data_output implements Runnable {
                 sendRST(tcb, payloadSize, responseBuffer);
                 return;
             }
-
             tcb.myAcknowledgementNum = tcpHeader.sequenceNumber + payloadSize;
             tcb.theirAcknowledgementNum = tcpHeader.acknowledgementNumber;
             IPPacket referencePacket = tcb.referencePacket;
@@ -228,6 +262,11 @@ public class TCP_data_output implements Runnable {
 
     private void sendRST(TCB tcb, int prevPayloadSize, ByteBuffer buffer)
     {
+        /*
+        the RST:
+        when an exception occurs
+         update the TCP buffer and close the connection
+         */
         tcb.referencePacket.updateTCPBuffer(buffer, (byte) IPPacket.TCPHeader.RST, 0, tcb.myAcknowledgementNum + prevPayloadSize, 0);
         outputQueue.offer(buffer);
         TCB.closeTCB(tcb);

@@ -11,7 +11,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 public class Gambling_exclusion extends Fragment implements View.OnClickListener {
-
+    /*
+    this fragment display the view of the gambling exclusion module
+     */
     private Button Start_button;
 
     public Gambling_exclusion()
@@ -20,18 +22,14 @@ public class Gambling_exclusion extends Fragment implements View.OnClickListener
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View view = inflater.inflate(R.layout.gambling_exclusion,container,false);
          Start_button = (Button) view.findViewById(R.id.button3);
         Start_button.setOnClickListener(this);
-
         return view ;
     }
 
@@ -41,7 +39,7 @@ public class Gambling_exclusion extends Fragment implements View.OnClickListener
         {
             case R.id.button3:
                 Intent i1 = new Intent(getActivity(),Gambling_exclusion_setting.class);
-                startActivity(i1);
+                startActivity(i1);  // use intent to start the gambling exclusion setting activity
                 break;
         }
 

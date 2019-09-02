@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -21,6 +20,9 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class Login_in extends AppCompatActivity implements View.OnClickListener {
 
+    /*
+    define the UI control elements
+     */
     private TextView tv,tv2;
     private EditText inputEmail,inputPassword,useremail;
     private Button login_button,sendButton,backButton;
@@ -32,7 +34,7 @@ public class Login_in extends AppCompatActivity implements View.OnClickListener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login_in);
 
-        user = FirebaseAuth.getInstance();
+        user = FirebaseAuth.getInstance(); //  get the instance
 
        Initialize_LoginUI();
         Addlistener();
@@ -43,25 +45,25 @@ public class Login_in extends AppCompatActivity implements View.OnClickListener 
         switch (view.getId()){
             case R.id.textView:
                 Intent i1 = new Intent(getApplicationContext(), Sign_up.class);
-                startActivity(i1);
+                startActivity(i1); // use intent to start next activity/ page
                 break;
             case R.id.button:
                 User_Login_in();
                 break;
             case R.id.textView3:
                 AlertDialog.Builder builder = new AlertDialog.Builder(Login_in.this);
-                View dialog_view = getLayoutInflater().inflate(R.layout.resetpassword_dialog,null);
+                View dialog_view = getLayoutInflater().inflate(R.layout.resetpassword_dialog,null);// create the view
                  useremail = (EditText)dialog_view.findViewById(R.id.editText5);
                  sendButton = (Button)dialog_view.findViewById(R.id.button5);
                  backButton = (Button)dialog_view.findViewById(R.id.button6);
                  pre2 = (ProgressBar)dialog_view.findViewById(R.id.progressBar3);
-                 builder.setView(dialog_view);
+                 builder.setView(dialog_view); // set the view of the dialog
                  final AlertDialog resetpassword_dialog = builder.create();
-                 resetpassword_dialog.show();
+                 resetpassword_dialog.show();  // show the dialog
                 backButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                    resetpassword_dialog.cancel();
+                    resetpassword_dialog.cancel();   //  cancel the dialog
                     }
                 });
                 sendButton.setOnClickListener(new View.OnClickListener() {
@@ -74,7 +76,7 @@ public class Login_in extends AppCompatActivity implements View.OnClickListener 
                         }
                         pre2.setVisibility(View.VISIBLE);
                         user.sendPasswordResetEmail(emailaddress).addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
+                            @Override  // this function is provided by the google api
                             public void onComplete(@NonNull Task<Void> task) {
                                 pre2.setVisibility(View.GONE);
                                 if(!task.isSuccessful())
@@ -86,6 +88,7 @@ public class Login_in extends AppCompatActivity implements View.OnClickListener 
                                 }
                             }
                         });
+                        finish();
                     }
                 });
                 break;
@@ -94,6 +97,12 @@ public class Login_in extends AppCompatActivity implements View.OnClickListener 
 
     private  void User_Login_in()
     {
+        /*
+        In this function, first get the input the user via the getText method
+        TextUtil class used to judge whether the input is right
+        Use the progress bar to give the progress feedback
+        invoke the signINWithEmailAndPassword method with the input
+         */
         String email = inputEmail.getText().toString().trim();
         final String password = inputPassword.getText().toString().trim();
         if(TextUtils.isEmpty(email))
@@ -143,6 +152,7 @@ public class Login_in extends AppCompatActivity implements View.OnClickListener 
 
     private void Addlistener()
     {
+        // add the listener to corresponding UI control element
         tv.setOnClickListener(this);
         tv2.setOnClickListener(this);
         login_button.setOnClickListener(this);

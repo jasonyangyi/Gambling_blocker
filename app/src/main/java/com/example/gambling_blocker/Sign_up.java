@@ -34,7 +34,6 @@ public class Sign_up extends AppCompatActivity implements View.OnClickListener {
 
        user = FirebaseAuth.getInstance();
        Initalize_SigninUI();
-
        tv.setOnClickListener(this);
        signup.setOnClickListener(this);
     }
@@ -43,7 +42,7 @@ public class Sign_up extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.textView2:
-                finish();
+                finish(); //  finish teh current activity/ disappear the current page
                 break;
             case R.id.button2:
                 // here is the implementation of the sign up function
@@ -55,7 +54,7 @@ public class Sign_up extends AppCompatActivity implements View.OnClickListener {
 
     private void User_Sign_up()
     {
-        String email = inputemail.getText().toString().trim();
+        String email = inputemail.getText().toString().trim(); // get the input of the user
         String password = inputpassword.getText().toString().trim();
         if (TextUtils.isEmpty(email))
         {
@@ -64,17 +63,16 @@ public class Sign_up extends AppCompatActivity implements View.OnClickListener {
         {
             Toast.makeText(getApplicationContext(), "Please input your password", Toast.LENGTH_LONG).show();
         }
-        else if(password.length()<6)
+        else if(password.length()<6) // the minimum of password should be 6
         {
             Toast.makeText(getApplicationContext(),"Passord too short! it cannot be fewer than 6 characters",Toast.LENGTH_LONG).show();
         }
         else {
-            pre.setVisibility(View.VISIBLE);
+            pre.setVisibility(View.VISIBLE); // use the progress bar to give user the progress feedback
             user.createUserWithEmailAndPassword(email, password).addOnCompleteListener(Sign_up.this, new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
-                    //       Toast.makeText(getApplicationContext(), "Sign up" + task.isSuccessful(), Toast.LENGTH_SHORT).show();
-                    pre.setVisibility(View.GONE);
+                    pre.setVisibility(View.GONE);  // invoke this method provided by google api to implement the register function
                     if (!task.isSuccessful()) {
                         Toast.makeText(getApplicationContext(), "Sorry, sign up failed" + task.getException(), Toast.LENGTH_LONG).show();
                     } else {
@@ -87,6 +85,9 @@ public class Sign_up extends AppCompatActivity implements View.OnClickListener {
     }
     private void Initalize_SigninUI()
     {
+        /*
+        Initialize the UI of  this sign up page
+         */
         tv=findViewById(R.id.textView2);
         inputemail = (EditText)findViewById(R.id.editText3);
         inputpassword = (EditText) findViewById(R.id.editText4);

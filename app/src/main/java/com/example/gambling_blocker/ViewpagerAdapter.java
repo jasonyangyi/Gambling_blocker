@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ViewpagerAdapter extends FragmentPagerAdapter {
+    /*
+    this class is used to store and manage the fragment
+     */
     private final List<Fragment> fragmentlist = new ArrayList<>();
     private final List<String> fragmenttitle = new ArrayList<>();
 

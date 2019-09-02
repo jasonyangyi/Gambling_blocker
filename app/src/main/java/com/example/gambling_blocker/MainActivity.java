@@ -7,9 +7,7 @@ import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity {
 
-    private int timeout = 3000;
-
-
+    private int timeout = 3000; // set the time out
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,7 +21,6 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         },timeout);
-
     }
 
 }

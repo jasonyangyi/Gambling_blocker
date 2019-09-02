@@ -1,7 +1,5 @@
 package com.example.gambling_blocker;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -26,7 +24,7 @@ public class UDP_data_output implements Runnable {
                 @Override
                 public void cleanup(Map.Entry<String, DatagramChannel> eldest)
                 {
-                    closeChannel(eldest.getValue());
+                    closeChannel(eldest.getValue()); // clean up the least recently used resources
                 }
             });
 
@@ -48,6 +46,8 @@ public class UDP_data_output implements Runnable {
                 IPPacket currentPacket;
                 do
                 {
+                    // get the first element in the queue
+                    // get the buffer first
                     currentPacket = inputQueue.poll();
                     if (currentPacket != null)
                         break;
@@ -78,25 +78,29 @@ public class UDP_data_output implements Runnable {
                     }
                     outputChannel.configureBlocking(false);
                     currentPacket.swapSourceAndDestination();
+                    // update the new source address and destination address
 
+                    // wake up the selector
                     selector.wakeup();
                     outputChannel.register(selector, SelectionKey.OP_READ, currentPacket);
+                    // register the channel to read the packet
 
                     channelCache.put(ipAndPort, outputChannel);
+                    // put it to the map list: key entry
                 }
 
                 try
                 {
                     ByteBuffer payloadBuffer = currentPacket.backingBuffer;
                     while (payloadBuffer.hasRemaining())
-                        outputChannel.write(payloadBuffer);
+                        outputChannel.write(payloadBuffer); // write the backing buffer back to physical network
                 }
                 catch (IOException e)
                 {
                     channelCache.remove(ipAndPort);
                     closeChannel(outputChannel);
                 }
-                ByteBufferPool.release(currentPacket.backingBuffer);
+                ByteBufferPool.release(currentPacket.backingBuffer); // make a buffer ready for a new sequence of channel-read or relative operations
             }
         }
         catch (InterruptedException e)
@@ -118,6 +122,9 @@ public class UDP_data_output implements Runnable {
         Iterator<Map.Entry<String, DatagramChannel>> it = channelCache.entrySet().iterator();
         while (it.hasNext())
         {
+            /*
+            close all of the channel managed by the selector
+             */
             closeChannel(it.next().getValue());
             it.remove();
         }

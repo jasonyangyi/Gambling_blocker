@@ -1,7 +1,5 @@
 package com.example.gambling_blocker;
 
-import android.util.Log;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
@@ -13,9 +11,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class TCP_data_input implements Runnable {
 
+    // this class used to process the TCP data in
     private static final int HEADER_SIZE = IPPacket.IP4_HEADER_SIZE + IPPacket.TCP_HEADER_SIZE;
     private ConcurrentLinkedQueue<ByteBuffer> outputQueue;
-    private Selector selector;
+    private Selector selector;  // the selector used to manage the channel
 
     public TCP_data_input(ConcurrentLinkedQueue<ByteBuffer> outputQueue, Selector selector)
     {
@@ -31,7 +30,7 @@ public class TCP_data_input implements Runnable {
             while (!Thread.interrupted())
             {
                 int readyChannels = selector.select();
-
+                // select the ready channel if the ready channel is 0
                 if (readyChannels == 0) {
                     Thread.sleep(10);
                     continue;
@@ -39,7 +38,7 @@ public class TCP_data_input implements Runnable {
 
                 Set<SelectionKey> keys = selector.selectedKeys();
                 Iterator<SelectionKey> keyIterator = keys.iterator();
-
+                //  traverse the selection keys to find the ready channel
                 while (keyIterator.hasNext() && !Thread.interrupted())
                 {
                     SelectionKey key = keyIterator.next();
@@ -65,20 +64,25 @@ public class TCP_data_input implements Runnable {
 
     private void processConnect(SelectionKey key, Iterator<SelectionKey> keyIterator)
     {
-        TCB tcb = (TCB) key.attachment();
+        TCB tcb = (TCB) key.attachment(); // attach a tcb object
         IPPacket referencePacket = tcb.referencePacket;
         try
         {
             if (tcb.channel.finishConnect())
             {
                 keyIterator.remove();
+                /*
+                if receive the syn
+                update the TCP buffer
+                insert this buffer to the output queue
+                 */
                 tcb.status = TCB.TCBStatus.SYN_RECEIVED;
                 ByteBuffer responseBuffer = ByteBufferPool.acquire();
                 referencePacket.updateTCPBuffer(responseBuffer, (byte) (IPPacket.TCPHeader.SYN | IPPacket.TCPHeader.ACK),
                         tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
                 outputQueue.offer(responseBuffer);
 
-                tcb.mySequenceNum++; // SYN counts as a byte
+                tcb.mySequenceNum++; //  seq+1
                 key.interestOps(SelectionKey.OP_READ);
             }
         }
@@ -95,14 +99,18 @@ public class TCP_data_input implements Runnable {
     {
         keyIterator.remove();
         ByteBuffer receiveBuffer = ByteBufferPool.acquire();
-        // Leave space for the header
+        //  this space is left for adding the header
         receiveBuffer.position(HEADER_SIZE);
 
+        // attach an tcb reference
         TCB tcb = (TCB) key.attachment();
         synchronized (tcb)
         {
             IPPacket referencePacket = tcb.referencePacket;
             SocketChannel inputChannel = (SocketChannel) key.channel();
+            /*
+            open the input channel and read the packet
+             */
             int readBytes;
             try
             {
@@ -118,7 +126,7 @@ public class TCP_data_input implements Runnable {
 
             if (readBytes == -1)
             {
-                // End of stream, stop waiting until we push more data
+                // if no packet received
                 key.interestOps(0);
                 tcb.waitingForNetworkData = false;
 
@@ -127,7 +135,6 @@ public class TCP_data_input implements Runnable {
                     ByteBufferPool.release(receiveBuffer);
                     return;
                 }
-
                 tcb.status = TCB.TCBStatus.LAST_ACK;
                 referencePacket.updateTCPBuffer(receiveBuffer, (byte) IPPacket.TCPHeader.FIN, tcb.mySequenceNum, tcb.myAcknowledgementNum, 0);
                 tcb.mySequenceNum++;

@@ -7,6 +7,10 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class TCB {
+    /*
+    the Transmission control block
+    each session during data transfer
+     */
     public String ipAndPort;
     public long mySequenceNum, theirSequenceNum;
     public long myAcknowledgementNum, theirAcknowledgementNum;
@@ -15,9 +19,9 @@ public class TCB {
     // TCP has more states, but we need only these
     public enum TCBStatus
     {
-        SYN_SENT,
-        SYN_RECEIVED,
-        ESTABLISHED,
+        SYN_SENT, // the syn has been sent
+        SYN_RECEIVED,  // the syn has been received
+        ESTABLISHED, // the connection has been established
         CLOSE_WAIT,
         LAST_ACK,
     }
@@ -27,7 +31,7 @@ public class TCB {
     public boolean waitingForNetworkData;
     public SelectionKey selectionKey;
 
-    private static final int MAX_CACHE_SIZE = 50; // XXX: Is this ideal?
+    private static final int MAX_CACHE_SIZE = 50;
     private static LRUCache<String, TCB> tcbCache =
             new LRUCache<>(MAX_CACHE_SIZE, new LRUCache.CleanupCallback<String, TCB>()
             {
@@ -40,7 +44,10 @@ public class TCB {
 
     public static TCB getTCB(String ipAndPort)
     {
-        synchronized (tcbCache)
+        /*
+        use this method to get the ip and port stored in the LRU cache
+         */
+        synchronized (tcbCache) // to avoid the dead lock
         {
             return tcbCache.get(ipAndPort);
         }
@@ -57,6 +64,9 @@ public class TCB {
     public TCB(String ipAndPort, long mySequenceNum, long theirSequenceNum, long myAcknowledgementNum, long theirAcknowledgementNum,
                SocketChannel channel, IPPacket referencePacket)
     {
+        /*
+        the TCB class used to construct a TCB object
+         */
         this.ipAndPort = ipAndPort;
         this.mySequenceNum = mySequenceNum;
         this.theirSequenceNum = theirSequenceNum;

@@ -7,6 +7,7 @@ import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -26,6 +27,7 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
     private String parent_key;
     private String spinnervalue;
     private long duration;
+    private AlertDialog dialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,7 +35,7 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
         setContentView(R.layout.password_input);
         Initialize_UI();
         Intent intent =getIntent();
-        password = intent.getStringExtra("password");
+        password = intent.getStringExtra("password");// use getStringExtra method to get the passed value
         Toast.makeText(getApplicationContext(),"the key is "+password,Toast.LENGTH_LONG).show();
     }
 
@@ -59,6 +61,11 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
                 finish();
                 break;
             case R.id.button_save:
+                /*
+                get the input from the user
+                compare this with the passed password
+
+                 */
                 parent_key = password_edit.getText().toString();
                 if(parent_key==null)
                 {
@@ -72,14 +79,14 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
                 {
                     if(change.isChecked()==true)
                     { // change the exclusion
-                        Remove_exclusion();
-                        Close_button();
+                        Remove_exclusion();// first stop the service
+                        Close_button();   // send the button to switch the button off
 
                         new Handler().postDelayed(new Runnable() { // use this handler to delay the action for about 3 seconds
                             @Override
                             public void run() {
                                 new CountDownTimer(duration, 1000) {
-
+                                  // a new counter to count again
                                     public void onTick(long millisUntilFinished) { }
 
                                     public void onFinish() {
@@ -114,6 +121,10 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
 
     private void Setspinner()
     {
+         /*
+        use array adapter to store the resource value
+        use setDropDownViewResource method to set the value to the spinner
+         */
         ArrayAdapter<CharSequence> timeadapter = ArrayAdapter.createFromResource(this,R.array.exclusion_duration,R.layout.support_simple_spinner_dropdown_item);
         timeadapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner.setAdapter(timeadapter);
@@ -127,6 +138,7 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
 
     private void Close_button()
     {
+
         Intent intent = new Intent("close"); // the push the button to the off state
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
@@ -135,12 +147,15 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
 
     private void Open_button()
     {
-        Intent intent = new Intent("open");
+        Intent intent = new Intent("open"); // send the broadcast to switch the button on
         LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
     }
 
     @Override
     public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+         /*
+        get the spinner value and transfer it to the service
+         */
        spinnervalue = spinner.getSelectedItem().toString();
        duration = getServicetime(spinnervalue);
     }
@@ -157,6 +172,9 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
     public void onNothingSelected(AdapterView<?> adapterView) { }
     private long getServicetime(String value)
     {
+         /*
+        transfer the String value to long value to get the service time
+         */
         long servicetime = 0;
         if(value.equals("10s"))
         {
@@ -179,5 +197,7 @@ public class Password_input extends AppCompatActivity implements View.OnClickLis
         }
         return servicetime;
     }
+
+
 
 }
